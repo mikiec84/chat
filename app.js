@@ -1,13 +1,34 @@
-var express = require('express')
-  , app = express()
-  , bodyParser = require('body-parser')
-  , port = process.env.PORT || 3000;
+var express = require('express'),
+    sockjs = require('sockjs'),
+    app = express(),
+    mongoose = require('mongoose'),
+    bodyParser = require('body-parser'),
+    nconf = require('nconf'),
+    logger = require('winston'),
+    chatController = require('./controllers/sockets');
+
+nconf.env()
+    .file({file: './config.json'});
+
+mongoose.Promise = require('bluebird');
+var mongoUrl = `mongodb://${nconf.get('DATABASE_USER')}:${nconf.get('DATABASE_PASSWORD')}@${nconf.get('DATABASE_HOST')}:${nconf.get('DATABASE_PORT')}/${nconf.get('DATABASE_DB')}?authSource=${nconf.get('DATABASE_AUTH_DB')}`;
+
+mongoose.connect(mongoUrl);
+mongoose.connection.on('open', function () {
+    logger.info('mongoose connected: ', mongoUrl);
+});
 
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 //app.use(require('./controllers'));
 
-app.listen(port, function() {
-  console.log('Listening on port ' + port)
+
+var port = nconf.get("SERVER_PORT");
+var server = app.listen(port, function () {
+    logger.info('Listening on port ' + port)
 });
+
+var service = sockjs.createServer();
+service.installHandlers(server, {prefix: '/chat'});
+service.on('connection', chatController);

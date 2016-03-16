@@ -1,0 +1,11 @@
+{
+    "SERVER_PORT": "8080",
+    "DATABASE_HOST": "127.0.0.1",
+    "DATABASE_PORT": 27017,
+    "DATABASE_USER": "root",
+    "DATABASE_PASSWORD": "app",
+    "DATABASE_DB": "admin",
+    "DATABASE_AUTH_DB": "app",
+    "REDIS_HOST": "127.0.0.1",
+    "REDIS_PORT": 6379
+}
