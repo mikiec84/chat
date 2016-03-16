@@ -8,11 +8,11 @@ var ModelInterval = new Schema({
 });
 
 var ModelChatUsers = new Schema({
-    'userId': Number,
+    'id': String,
     'username': String,
-    'userAvatar': String,
-    'userFirstName': String,
-    'userLastName': String,
+    'avatar': String,
+    'firstName': String,
+    'lastName': String,
     'status': String,
     'intervals': [ModelInterval],
     'unreadCount': Number,
@@ -23,7 +23,7 @@ var ModelChat = new Schema({
     type: String,
     createdAt: Date,
     lastMessageAt: Date,
-    ownerId: Number,
+    ownerId: String,
     chatUsers: [ModelChatUsers]
 }, {
     versionKey: false,

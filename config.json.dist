@@ -7,5 +7,6 @@
     "DATABASE_DB": "admin",
     "DATABASE_AUTH_DB": "app",
     "REDIS_HOST": "127.0.0.1",
-    "REDIS_PORT": 6379
+    "REDIS_PORT": 6379,
+    "JWT_SECRET": "secret"
 }

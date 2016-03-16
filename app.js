@@ -5,7 +5,9 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     nconf = require('nconf'),
     logger = require('winston'),
-    chatController = require('./controllers/sockets');
+    chatController = require('./sockets/controller'),
+    expressJwt = require('express-jwt'),
+    controllers = require('./controllers');
 
 nconf.env()
     .file({file: './config.json'});
@@ -21,8 +23,13 @@ mongoose.connection.on('open', function () {
 app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
-//app.use(require('./controllers'));
 
+var jwtMiddleware = expressJwt({secret: nconf.get('JWT_SECRET')});
+
+app.use('/api', jwtMiddleware);
+app.use('/chat', jwtMiddleware);
+
+app.use(controllers);
 
 var port = nconf.get("SERVER_PORT");
 var server = app.listen(port, function () {

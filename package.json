@@ -16,6 +16,8 @@
     "bluebird": "^3.3.4",
     "body-parser": "^1.12.3",
     "express": "^4.12.3",
+    "express-jwt": "^3.3.0",
+    "jsonwebtoken": "^5.7.0",
     "mongoose": "^4.4.7",
     "nconf": "^0.8.4",
     "redis": "^2.5.1",
