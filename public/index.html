@@ -7,20 +7,6 @@
 <body>
     hello
     <script src="//cdn.jsdelivr.net/sockjs/0.3.4/sockjs.min.js"></script>
-    <script>
-        var result = new SockJS('http://localhost:8080/chat');
-
-        result.onopen = function () {
-            console.log('opened');
-        };
-
-        result.onclose = function (e) {
-            console.log('closed');
-        };
-
-        result.onmessage = function (e) {
-            console.log(e);
-        };
-    </script>
+    <script src="chat.js"></script>
 </body>
 </html>

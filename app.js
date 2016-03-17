@@ -5,7 +5,7 @@ var express = require('express'),
     bodyParser = require('body-parser'),
     nconf = require('nconf'),
     logger = require('winston'),
-    chatController = require('./sockets/controller'),
+    chatController = require('./sockets/index'),
     expressJwt = require('express-jwt'),
     controllers = require('./controllers');
 
