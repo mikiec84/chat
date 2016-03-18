@@ -8,6 +8,12 @@ var userChannel = (id) => 'user:' + id;
 
 var stripTags = (str) => str.replace(/<\/?[^>]+>/g, '');
 
+var publishToChat = (redisPublisher, chat, message) => {
+    chat.chatUsers
+        .filter(entry => entry.status == constants.chatStatuses.ACTIVE)
+        .forEach(entry => redisPublisher.publish(userChannel(entry.id), JSON.stringify(message)))
+};
+
 var createMessage = (userData, room, type, clientId) => {
     return {
         avatar: userData.avatar,
@@ -86,6 +92,46 @@ module.exports = function (redisPublisher, userData) {
             message.url = stripTags(data.url);
 
             return sendMessage(redisPublisher, message, new modelMessage.ImageMessage(message));
+        },
+        editMessage: (data) => {
+            if (!validators.validateEditMessage(data)) {
+                logger.warn('Image invalid: ', data);
+                return;
+            }
+
+            return modelMessage.TextMessage.findOne({_id: data.id, userId: userData.id}).exec().then((message) => {
+                if (!message || message.deletedAt) {
+                    throw new Error('message not found');
+                }
+
+                //if it's older than 30 minutes
+                if (new Date(message.createdAt.getTime() + 60000 * 30) < new Date()) {
+                    throw new Error('you cannot edit message older than 30 minutes');
+                }
+
+                message.text = stripTags(data.text);
+                message.updatedAt = new Date();
+
+                return [modelChat.Chat.findOne({ _id: message.room }).exec(), message.save()];
+            }).spread((chat, message) => {
+                var redisMessage = {
+                    id: message._id,
+                    text: message.text,
+                    avatar: userData.avatar,
+                    createdAt: message.createdAt,
+                    updatedAt: message.updatedAt,
+                    room: message.room,
+                    userId: userData.id,
+                    name: userData.username
+                };
+
+                var socketMessage = {
+                    method: 'editMessage',
+                    arg: redisMessage
+                };
+
+                publishToChat(redisPublisher, chat, socketMessage);
+            }).catch(error => logger.warn(error.message));
         }
     }
 };

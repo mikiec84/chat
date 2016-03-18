@@ -11,17 +11,17 @@ describe('validateTextMessage', () => {
     });
 
     it('should be invalid', () => {
-        var emptyRoom = {
+        var emptyText = {
             'room': '56e944a27db4c671afd4d375',
             'text': ''
         };
-        validator.validateTextMessage(emptyRoom).should.eql(false);
+        validator.validateTextMessage(emptyText).should.eql(false);
 
-        var emptyText = {
+        var emptyRoom = {
             'room': '',
             'text': 'hello'
         };
-        validator.validateTextMessage(emptyText).should.eql(false);
+        validator.validateTextMessage(emptyRoom).should.eql(false);
     });
 });
 
@@ -35,16 +35,40 @@ describe('validateImageMessage', () => {
     });
 
     it('should be invalid', () => {
-        var emptyRoom = {
+        var emptyUrl = {
             'room': '56e944a27db4c671afd4d375',
             'url': ''
         };
-        validator.validateImageMessage(emptyRoom).should.eql(false);
+        validator.validateImageMessage(emptyUrl).should.eql(false);
 
-        var emptyText = {
+        var emptyRoom = {
             'room': '',
             'url': 'http://vk.com/example.jpg'
         };
-        validator.validateImageMessage(emptyText).should.eql(false);
+        validator.validateImageMessage(emptyRoom).should.eql(false);
+    });
+});
+
+describe('validateImageMessage', () => {
+    it('should be valid', () => {
+        var valid = {
+            'id': '56e944a27db4c671afd4d375',
+            'text': 'hello'
+        };
+        validator.validateEditMessage(valid).should.eql(true);
+    });
+
+    it('should be invalid', () => {
+        var emptyText = {
+            'id': '56e944a27db4c671afd4d375',
+            'text': ''
+        };
+        validator.validateEditMessage(emptyText).should.eql(false);
+
+        var emptyRoom = {
+            'room': '',
+            'text': 'hello'
+        };
+        validator.validateEditMessage(emptyRoom).should.eql(false);
     });
 });

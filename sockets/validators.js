@@ -1,6 +1,6 @@
 var Validator = require('jsonschema').Validator;
 
-var textMessageSchema = {
+var TextMessageSchema = {
     id: '/TextMessage',
     type: 'object',
     properties: {
@@ -11,7 +11,7 @@ var textMessageSchema = {
     'required': ['room', 'text']
 };
 
-var imageMessageSchema = {
+var ImageMessageSchema = {
     id: '/ImageMessage',
     type: 'object',
     properties: {
@@ -22,15 +22,30 @@ var imageMessageSchema = {
     'required': ['room', 'url']
 };
 
+var EditMessageSchema = {
+    id: '/EditMessage',
+    type: 'object',
+    properties: {
+        'id': { 'type': 'string', 'minLength':1 },
+        'text': { 'type': 'string', 'minLength':1 }
+    },
+    'required': ['id', 'text']
+};
+
 module.exports = {
     validateTextMessage: (message) => {
         var v = new Validator();
 
-        return v.validate(message, textMessageSchema).errors.length == 0;
+        return v.validate(message, TextMessageSchema).errors.length == 0;
     },
     validateImageMessage: (message) => {
         var v = new Validator();
 
-        return v.validate(message, imageMessageSchema).errors.length == 0;
+        return v.validate(message, ImageMessageSchema).errors.length == 0;
+    },
+    validateEditMessage: (message) => {
+        var v = new Validator();
+
+        return v.validate(message, EditMessageSchema).errors.length == 0;
     }
 };

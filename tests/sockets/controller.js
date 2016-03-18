@@ -248,3 +248,93 @@ describe('image message sending', () => {
         });
     });
 });
+
+describe('edit message', () => {
+    beforeEach(function (done) {
+        if (mongoose.connection.db) return done();
+
+        mongoose.connect(config.mongoUrl, done);
+    });
+
+    it('should receive updating', (done) => {
+        var publisher = new RedisPublisherMock();
+        var sender = users[0],
+            receiver = users[1];
+
+        new modelChat.Chat({
+            type: constants.chatTypes.PRIVATE,
+            createdAt: new Date(),
+            chatUsers: [generateChatUser(sender, constants.chatStatuses.ACTIVE), generateChatUser(receiver, constants.chatStatuses.ACTIVE)]
+        }).save().then((data) => {
+            return new modelMessage.TextMessage({
+                text: 'hello',
+                createdAt: new Date(),
+                room: data._id.toString(),
+                userId: sender.id
+            }).save();
+        }).then((data) => {
+            var socketController = controller(publisher, sender);
+            var beforeEdit = new Date();
+
+            socketController.editMessage({
+                id: data._id.toString(),
+                text: 'edited'
+            }).then(() => {
+                //2 participants receive message
+                Object.keys(publisher.messages).length.should.eql(2);
+
+                //messages are equal
+                var values = Object.keys(publisher.messages).map((key) => publisher.messages[key]);
+                new Set(values).size.should.eql(1);
+                var message = JSON.parse(values[0]);
+
+                //message should be valid json
+                message.method.should.eql('editMessage');
+                message.arg.should.have.property('id');
+                (new Date(message.arg.createdAt) < beforeEdit).should.be.ok;
+                (new Date(message.arg.updatedAt) > beforeEdit).should.be.ok;
+                message.arg.text.should.eql('edited');
+
+                //message should be edited in database
+                modelMessage.TextMessage.findOne({'_id': message.arg.id}).exec().then((data) => {
+                    data.text.should.eql('edited');
+                    done();
+                });
+            })
+        });
+    });
+
+
+    it('after 30 minutes message should not be updated', (done) => {
+        var publisher = new RedisPublisherMock();
+        var sender = users[0],
+            receiver = users[1];
+
+        new modelChat.Chat({
+            type: constants.chatTypes.PRIVATE,
+            createdAt: new Date(),
+            chatUsers: [generateChatUser(sender, constants.chatStatuses.ACTIVE), generateChatUser(receiver, constants.chatStatuses.ACTIVE)]
+        }).save().then((data) => {
+            return new modelMessage.TextMessage({
+                text: 'hello',
+                createdAt: new Date(new Date().getTime() - 1000 * 60 * 60),
+                room: data._id.toString(),
+                userId: sender.id
+            }).save();
+        }).then((data) => {
+            var socketController = controller(publisher, sender);
+            socketController.editMessage({
+                id: data._id.toString(),
+                text: 'edited'
+            }).then(() => {
+                Object.keys(publisher.messages).length.should.eql(0);
+
+                //message should be edited in database
+                modelMessage.TextMessage.findOne({'_id': data._id.toString()}).exec().then((data) => {
+                    data.text.should.eql('hello');
+                    done();
+                });
+            })
+        });
+    });
+});
