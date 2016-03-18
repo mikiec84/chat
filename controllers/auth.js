@@ -1,6 +1,6 @@
 var express = require('express'),
     jwt = require('jsonwebtoken'),
-    nconf = require('nconf'),
+    config = require('../config'),
     users = require('../models/users'),
     router = express.Router();
 
@@ -11,7 +11,7 @@ router.post('/authenticate', function (req, res) {
         return;
     }
 
-    var token = jwt.sign(user, nconf.get('JWT_SECRET'), { expiresIn: "5h" });
+    var token = jwt.sign(user, config.jwtSecret, { expiresIn: "5h" });
 
     res.json({ token: token });
 });

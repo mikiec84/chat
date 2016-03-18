@@ -16,28 +16,27 @@ var Message = mongoose.model('Message', MessageSchema);
 
 var TextMessage = Message.discriminator(constants.messageTypes.TEXT, new mongoose.Schema({
     text: { type: String, trim: true },
-    imageUrl: String,
     updatedAt: Date,
-    devaredAt: Date,
-    userId: Number,
+    deletedAt: Date,
+    userId: String,
     readed: Boolean
 }, options));
 
 var ImageMessage = Message.discriminator(constants.messageTypes.IMAGE, new mongoose.Schema({
     imageUrl: { type: String, trim: true },
     updatedAt: Date,
-    devaredAt: Date,
-    userId: Number,
+    deletedAt: Date,
+    userId: String,
     readed: Boolean
 }, options));
 
 var ExitMessage = Message.discriminator(constants.messageTypes.EXIT, new mongoose.Schema({
-    userId: Number
+    userId: String
 }, options));
 
 var KickMessage = Message.discriminator(constants.messageTypes.KICK, new mongoose.Schema({
-    kicking: Number, //user who kick
-    kicked: Number // kicked user
+    kicking: String, //user who kick
+    kicked: String // kicked user
 }, options));
 
 module.exports = {

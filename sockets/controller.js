@@ -1,17 +1,29 @@
 var modelChat = require('../models/chat'),
+    modelMessage = require('../models/message'),
     logger = require('winston'),
-    constants = require('../helpers/constants');
+    constants = require('../helpers/constants'),
+    validators = require('./validators');
 
 var userChannel = (id) => 'user:' + id;
+
+var stripTags = (str) => str.replace(/<\/?[^>]+>/g, '');
 
 var sendMessage = (redisPublisher, message, mongoMessage) => {
     var socketMessage = {
         method: 'message',
-        args: [message]
+        arg: message
     };
 
-    modelChat.Chat
-        .findOne({_id: mongoMessage.room}).exec()
+    return modelChat.Chat
+        .findOne({
+            '_id': message.room,
+            'chatUsers': {
+                '$elemMatch': {
+                    'id': message.userId,
+                    'status': constants.chatStatuses.ACTIVE
+                }
+            }
+        }).exec()
         .then((data) => {
             if (!data) {
                 throw new Error(`Room ${mongoMessage.room} not found`)
@@ -21,43 +33,43 @@ var sendMessage = (redisPublisher, message, mongoMessage) => {
             return [messagePromise, data];
         })
         .spread((messagePromise, room) => {
-            room.lastUpdatedAt = new Date();
+            socketMessage.arg.id = messagePromise._id;
+            room.lastMessageAt = new Date();
             room.chatUsers
                 .filter(x => x.status == constants.chatStatuses.ACTIVE)
                 .forEach(function (entry) {
-                    if (entry.userId != message.userId) {
+                    if (entry.id != message.userId) {
                         entry.unreadCount += 1;
                     }
 
-                    redisPublisher.publish(userChannel(entry.userId), JSON.stringify(socketMessage));
+                    redisPublisher.publish(userChannel(entry.id), JSON.stringify(socketMessage));
                 });
 
             return room.save();
         })
-        .then(data => logger.info(`${data.id} sent to room ${data.room}`))
-        .catch(logger.error);
+        .then(data => logger.info(`Message ${data.id}: ${message.text}`))
+        .catch(error => logger.warn(error.message));
 };
 
 module.exports = function (redisPublisher, userData) {
     return {
         message: (data) => {
-            if (!text || !room) {
-                debug(['invalid parameters text or room'.red, text, room]);
+            if (!validators.validateTextMessage(data)) {
+                logger.warn('Message invalid: ', data);
                 return;
             }
 
             var message = {
-                avatar: clientSocket.avatar,
-                created_at: new Date(),
-                room: room,
-                user_id: clientSocket.user_id,
-                name: clientSocket.username,
-                client_id: id,
-                type: modelMessage.types.TEXT,
-                text: stripTags(text)
+                avatar: userData.avatar,
+                createdAt: new Date(),
+                room: data.room,
+                userId: userData.id,
+                name: userData.username,
+                clientId: data.clientId,
+                text: stripTags(data.text)
             };
 
-            sendMessage(message, new modelMessage.TextMessage(message));
+            return sendMessage(redisPublisher, message, new modelMessage.TextMessage(message));
         }
     }
 };

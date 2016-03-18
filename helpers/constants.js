@@ -1,4 +1,8 @@
 module.exports = {
+    chatTypes: {
+        PRIVATE: 'private',
+        GROUP: 'group'
+    },
     chatStatuses: {
         ACTIVE: 'active',
         EXITED: 'exited',

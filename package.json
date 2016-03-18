@@ -10,13 +10,14 @@
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
-    "test": "node_modules/.bin/mocha tests/**"
+    "test": "node_modules/.bin/mocha tests/** --DATABASE_DB=test --LOG_LEVEL=error"
   },
   "dependencies": {
     "bluebird": "^3.3.4",
     "body-parser": "^1.12.3",
     "express": "^4.12.3",
     "express-jwt": "^3.3.0",
+    "jsonschema": "^1.1.0",
     "jsonwebtoken": "^5.7.0",
     "mongoose": "^4.4.7",
     "nconf": "^0.8.4",
@@ -26,6 +27,8 @@
   },
   "devDependencies": {
     "mocha": "^2.2.4",
+    "mocha-mongoose": "^1.2.0",
+    "mongodb": "^2.1.7",
     "should": "^6.0.1"
   },
   "private": true

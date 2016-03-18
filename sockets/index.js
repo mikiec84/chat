@@ -1,14 +1,13 @@
 var logger = require('winston'),
     redis = require('redis'),
-    nconf = require('nconf'),
+    config = require('../config'),
     jwt = require('jsonwebtoken'),
     controller = require('./controller');
 
 var createRedisClient =
-    () => redis.createClient(nconf.get('REDIS_PORT'), nconf.get('REDIS_HOST'));
+    () => redis.createClient(config.redisPort, config.redisHost);
 
 var redisPublisher = createRedisClient();
-
 module.exports = function (conn) {
     var rpc = {}, userData, redisSubscriber;
 
@@ -17,7 +16,7 @@ module.exports = function (conn) {
             conn.close(403, 'Invalid token');
         }
         try {
-            authenticateUser(jwt.verify(data.token, nconf.get('JWT_SECRET')));
+            authenticateUser(jwt.verify(data.token, config.jwtSecret));
         } catch(err) {
             conn.close(403, 'Invalid token');
         }
@@ -41,7 +40,7 @@ module.exports = function (conn) {
         if (rpc[msg.method]) {
             rpc[msg.method](msg.arg);
         } else {
-            logger.error(['Unknown rpc method'.red, msg.method]);
+            logger.warn(`Unknown rpc method${msg.method}`);
         }
     });
 

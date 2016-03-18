@@ -7,7 +7,7 @@ var ModelInterval = new Schema({
     to: Date
 });
 
-var ModelChatUsers = new Schema({
+var ModelChatUser = new Schema({
     'id': String,
     'username': String,
     'avatar': String,
@@ -17,6 +17,8 @@ var ModelChatUsers = new Schema({
     'intervals': [ModelInterval],
     'unreadCount': Number,
     'lastReadAt': Date
+}, {
+    _id: false
 });
 
 var ModelChat = new Schema({
@@ -24,7 +26,7 @@ var ModelChat = new Schema({
     createdAt: Date,
     lastMessageAt: Date,
     ownerId: String,
-    chatUsers: [ModelChatUsers]
+    chatUsers: [ModelChatUser]
 }, {
     versionKey: false,
     collection: 'chat'
