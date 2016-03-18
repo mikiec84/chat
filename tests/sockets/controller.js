@@ -29,7 +29,7 @@ function generateChatUser(user, status) {
     };
 }
 
-describe('text message send', () => {
+describe('text message sending', () => {
     beforeEach(function (done) {
         if (mongoose.connection.db) return done();
 
@@ -72,10 +72,11 @@ describe('text message send', () => {
                     message.arg.userId.should.eql(sender.id);
                     message.arg.text.should.eql('hello');
                     message.arg.name.should.eql(sender.username);
+                    message.arg.type.should.eql('text');
 
                     //message should exists in database and in chat unreadCount and lastMessageAt should be updated
                     modelMessage.TextMessage.findOne({'_id': message.arg.id}).exec().then((data) => {
-                        data.should.be.type('object')
+                        data.should.be.type('object');
 
                         return modelChat.Chat.findOne({'_id': message.arg.room}).exec();
                     }).then((data) => {
@@ -182,5 +183,68 @@ describe('text message send', () => {
         it('message should not send from deleted user', generateMessageShouldNotSendTest(constants.chatStatuses.DELETED));
         it('message should not send from kicked user', generateMessageShouldNotSendTest(constants.chatStatuses.EXITED));
         it('message should not send from exited user', generateMessageShouldNotSendTest(constants.chatStatuses.KICKED));
+    });
+});
+
+describe('image message sending', () => {
+    beforeEach(function (done) {
+        if (mongoose.connection.db) return done();
+
+        mongoose.connect(config.mongoUrl, done);
+    });
+
+    var publisher = new RedisPublisherMock();
+    it('should receive message', (done) => {
+        var sender = users[0],
+            receiver = users[1];
+
+        new modelChat.Chat({
+            type: constants.chatTypes.PRIVATE,
+            createdAt: new Date(),
+            chatUsers: [generateChatUser(sender, constants.chatStatuses.ACTIVE), generateChatUser(receiver, constants.chatStatuses.ACTIVE)]
+        }).save().then((data) => {
+            var socketController = controller(publisher, sender);
+            var startDate = new Date();
+            socketController.image({
+                room: data._id.toString(),
+                url: 'http://vk.com/example.jpg',
+                clientId: 'testid'
+            }).then(() => {
+                //2 participants receive message
+                Object.keys(publisher.messages).length.should.eql(2);
+
+                //messages are equal
+                var values = Object.keys(publisher.messages).map((key) => publisher.messages[key]);
+                new Set(values).size.should.eql(1);
+                var message = JSON.parse(values[0]);
+
+                //message should be valid json
+                message.method.should.eql('message');
+                message.arg.should.have.property('id');
+                (new Date(message.arg.createdAt) > startDate).should.be.ok;
+                message.arg.avatar.should.eql(sender.avatar);
+                message.arg.room.should.eql(data._id.toString());
+                message.arg.clientId.should.eql('testid');
+                message.arg.userId.should.eql(sender.id);
+                message.arg.url.should.eql('http://vk.com/example.jpg');
+                message.arg.name.should.eql(sender.username);
+                message.arg.type.should.eql('image');
+
+                //message should exists in database and in chat unreadCount and lastMessageAt should be updated
+                modelMessage.ImageMessage.findOne({'_id': message.arg.id}).exec().then((data) => {
+                    data.should.be.type('object');
+
+                    return modelChat.Chat.findOne({'_id': message.arg.room}).exec();
+                }).then((data) => {
+                    data.chatUsers.forEach((entry) => {
+                        if (entry.id != message.arg.userId) {
+                            entry.unreadCount.should.eql(1);
+                        }
+                    });
+                    (data.lastMessageAt > startDate).should.be.ok;
+                    done()
+                });
+            })
+        });
     });
 });
