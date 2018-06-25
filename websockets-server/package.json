@@ -1,0 +1,21 @@
+{
+    "name": "websockets-server",
+    "version": "0.0.1",
+    "description": "Simple server-side implementation for websockets chat",
+    "main": "app.js",
+    "scripts": {
+        "start": "nodemon app.js"
+    },
+    "keywords": [
+        "websockets"
+    ],
+    "author": "dmitriydementor@gmail.com",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.16.3",
+        "socket.io": "^2.1.1"
+    },
+    "devDependencies": {
+        "nodemon": "^1.17.5"
+    }
+}

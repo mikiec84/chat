@@ -1,0 +1,41 @@
+<ion-header>
+    <ion-navbar>
+        <button ion-button menuToggle>
+      <ion-icon name="menu"></ion-icon>
+    </button>
+        <ion-title>Home</ion-title>
+    </ion-navbar>
+</ion-header>
+
+<ion-content padding>
+    <h3>Welocme to chat!</h3>
+
+    <p>Your credentials:</p>
+    <form [formGroup]="userForm">
+        <ion-item>
+            <ion-label floating>Your ID</ion-label>
+            <ion-input type="text" formControlName="id" [readonly]="true"></ion-input>
+        </ion-item>
+        <ion-item>
+            <ion-label floating>Username</ion-label>
+            <ion-input type="text" formControlName="username"></ion-input>
+        </ion-item>
+
+        <div padding>
+            <button ion-button (click)="saveCredentials()" block>Save credentials</button>
+        </div>
+    </form>
+
+    <form>
+        <ion-item>
+            <ion-label floating>Server URL</ion-label>
+            <ion-input type="text" [formControl]="urlFormControl"></ion-input>
+        </ion-item>
+        <div padding>
+            <button ion-button (click)="saveUrl()" block>Save URL</button>
+        </div>
+    </form>
+
+
+
+</ion-content>

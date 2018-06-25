@@ -1,0 +1,30 @@
+<ion-header>
+
+    <ion-navbar>
+        <button ion-button icon-only menuToggle>
+              <ion-icon name="menu"></ion-icon>
+        </button>
+        <ion-title>Chat with {{ chatWithUsername }}</ion-title>
+    </ion-navbar>
+
+</ion-header>
+
+
+<ion-content padding>
+    <ul>
+        <li *ngFor="let message of messages">
+            <span>{{ message.username }} :</span>
+            <span>{{ message.text }}</span>
+        </li>
+    </ul>
+</ion-content>
+
+<ion-footer padding>
+    <form [formGroup]="messageForm" style="display: flex;">
+        <ion-textarea placeholder="Type message..." rows="4" maxLength="500"
+                 formControlName="messageInput"></ion-textarea>
+        <button ion-button clear (click)="onSendClick()">
+            <ion-icon name="md-send" color="text"></ion-icon>
+        </button>
+    </form>
+</ion-footer>

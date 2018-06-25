@@ -1,1 +1,1 @@
-# Chat based on sock.js
+# Chat based on socket.io
