@@ -14,12 +14,13 @@ export class HomePage implements OnInit {
         public navCtrl: NavController,
         private formBuilder: FormBuilder,
         private userProvider: UserProvider,
+        private websocketProvider: WebsocketProvider,
     ) {
         this.userForm = this.formBuilder.group({
             id: [''],
             username: ['']
         });
-        this.urlFormControl = new FormControl('');
+        this.urlFormControl = new FormControl(this.websocketProvider.getSocketUrl());
     }
 
     public userForm: FormGroup;
@@ -29,10 +30,6 @@ export class HomePage implements OnInit {
         const user = this.userProvider.getUser();
         this.userForm.controls.id.setValue(user.id);
         this.userForm.controls.username.setValue(user.username);
-
-        this.urlFormControl.setValue(
-            !!localStorage.url ? localStorage.url : 'https://websocket-chat.pp.ua/'
-        );
     }
 
     public saveCredentials() {
@@ -40,7 +37,7 @@ export class HomePage implements OnInit {
     }
 
     public saveUrl() {
-        localStorage.setItem('url', this.urlFormControl.value);
+        this.websocketProvider.updateSocketUrl(this.urlFormControl.value);
     }
 
 }

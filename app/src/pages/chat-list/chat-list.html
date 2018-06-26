@@ -11,7 +11,6 @@
     <p *ngIf="users.length === 0">There are no online users!</p>
     <ion-list>
         <button ion-item *ngFor="let user of users" (click)="chatWith(user)">
-      <ion-icon name="user" item-start></ion-icon>
       {{ user.username }}
       <div class="item-note" item-end>
         {{ user.id }}

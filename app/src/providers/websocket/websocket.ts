@@ -6,10 +6,8 @@ import { Observable } from 'rxjs';
 export class WebsocketProvider {
 
     constructor() {
-        this.socket = io.connect(this.url);
-        (window as any).ws = this;
+        this.socket = io.connect(this.getSocketUrl());
     }
-    private readonly url: string = !!localStorage.url ? localStorage.url: 'localhost:3000';
     private socket;
 
 
@@ -27,5 +25,14 @@ export class WebsocketProvider {
                 observer.next(data);
             });
         });
+    }
+
+    public getSocketUrl(): string {
+        return !!localStorage.url ? localStorage.url: 'http://bot.lazy-ants.com:5000';
+    }
+
+    public updateSocketUrl(url: string) {
+        this.socket = io.connect(url);
+        localStorage.setItem('url', url);
     }
 }

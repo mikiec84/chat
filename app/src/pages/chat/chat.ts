@@ -3,6 +3,7 @@ import { IonicPage, NavController, NavParams } from 'ionic-angular';
 import { ChatProvider } from '@providers/chat/chat';
 import { UserProvider } from '@providers/user/user';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { Subscription } from 'rxjs';
 
 @IonicPage({
     name: 'chat-page',
@@ -21,18 +22,18 @@ export class ChatPage {
         private formBuilder: FormBuilder,
     ) {
         navParams.data.username ? this.isPublicChat = false : this.isPublicChat = true;
-        this.chatWithUsername = this.isPublicChat ? navParams.data.username : 'all';
+        this.chatWithUsername = !this.isPublicChat ? navParams.data.username : 'all';
         this.roomId = !this.isPublicChat ? this.chatProvider.getRoomId(this.userProvider.getUser(), navParams.data) : null;
 
 
         if (this.isPublicChat) {
-            this.chatProvider.publicChatMessages.subscribe(message => {
+            this.chatMessagesSubscription = this.chatProvider.publicChatMessages.subscribe(message => {
                 message ? this.messages.push(message) : null;
             });
             this.chatProvider.sendMessage('joined this chat');
         } else {
             this.chatProvider.joinRoom(this.roomId);
-            this.chatProvider.publicChatMessages.subscribe(message => {
+            this.chatMessagesSubscription = this.chatProvider.publicChatMessages.subscribe(message => {
                 message ? this.messages.push(message) : null;
             });
             this.chatProvider.sendMessage('joined this chat', navParams.data.roomId);
@@ -41,6 +42,11 @@ export class ChatPage {
         this.messageForm = this.formBuilder.group({
             messageInput: ['']
         });
+
+        const messagesHistory = this.chatProvider.getMessagesHistory(this.roomId);
+        console.log(messagesHistory);
+
+        this.messages = messagesHistory ? messagesHistory : [];
     }
 
     public chatWithUsername: string;
@@ -48,6 +54,7 @@ export class ChatPage {
     public isPublicChat: boolean;
     public roomId: string;
     public messageForm: FormGroup;
+    private chatMessagesSubscription: Subscription;
 
     public onSendClick() {
         const message = this.messageForm.controls.messageInput.value;
@@ -61,6 +68,7 @@ export class ChatPage {
 
     ionViewWillLeave() {
         this.roomId && this.chatProvider.leaveRoom(this.roomId);
+        this.chatMessagesSubscription && this.chatMessagesSubscription.unsubscribe();
     }
 
 }

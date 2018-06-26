@@ -21,8 +21,8 @@
 
 <ion-footer padding>
     <form [formGroup]="messageForm" style="display: flex;">
-        <ion-textarea placeholder="Type message..." rows="4" maxLength="500"
-                 formControlName="messageInput"></ion-textarea>
+        <ion-input placeholder="Type message..." maxLength="500"
+                 formControlName="messageInput"></ion-input>
         <button ion-button clear (click)="onSendClick()">
             <ion-icon name="md-send" color="text"></ion-icon>
         </button>

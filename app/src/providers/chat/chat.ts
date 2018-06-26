@@ -1,21 +1,28 @@
 import { Injectable } from '@angular/core';
 import { WebsocketProvider } from '@providers/websocket/websocket';
 import { UserProvider, User } from '@providers/user/user';
-import { Observable, Subscription, BehaviorSubject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 
 @Injectable()
 export class ChatProvider {
+
+    public readonly publicChatMessages = new BehaviorSubject<any>(null);
+    public currentRoomId: string;
+    private messagesHistory = {
+        public: [],
+        private: {}
+    };
 
     constructor(
         private websocketProvider: WebsocketProvider,
         private userProvider: UserProvider,
     ) {
-        this.websocketProvider.onEvent('public-chat-updated').subscribe((chatMessage) => {
+        this.websocketProvider.onEvent('public-chat-updated')
+        .subscribe((chatMessage) => {
+            this.saveMessage(chatMessage);
             this.publicChatMessages.next(chatMessage);
         });
     }
-
-    public readonly publicChatMessages = new BehaviorSubject<any>(null);
 
     public sendMessage(messageText: string, receiverId?: string) {
         const user = this.userProvider.getUser();
@@ -28,15 +35,16 @@ export class ChatProvider {
     }
 
     public joinRoom(roomId: string) {
+        this.currentRoomId = roomId;
         this.websocketProvider.emitEvent('join-room', roomId);
     }
 
     public leaveRoom(roomId: string) {
+        this.currentRoomId = null;
         this.websocketProvider.emitEvent('leave-room', roomId);
     }
 
     public getRoomId(user1: User, user2: User) {
-        console.log(user1, user2);
         if (
             Number(user1.id.replace('-', '')) > Number(user2.id.replace('-', ''))
         ) {
@@ -46,5 +54,22 @@ export class ChatProvider {
         }
     }
 
+    private saveMessage(message: string) {
+        if (this.currentRoomId) {
+            this.saveMessageInRoom(message, this.currentRoomId);
+        } else {
+            this.messagesHistory.public.push(message);
+        }
+    }
 
+    private saveMessageInRoom(message: string, roomId: string) {
+        if (!this.messagesHistory.private[roomId]) {
+            this.messagesHistory.private[roomId] = [];
+        }
+        this.messagesHistory.private[roomId].push(message);
+    }
+
+    public getMessagesHistory(roomId?: string) {
+        return roomId ? this.messagesHistory.private[roomId] : this.messagesHistory.public;
+    }
 }
