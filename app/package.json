@@ -1,6 +1,6 @@
 {
     "name": "lazy-ants-chat",
-    "version": "0.0.1",
+    "version": "0.2.1",
     "author": "dmitriydementor@gmail.com",
     "homepage": "http://ionicframework.com/",
     "private": true,
@@ -28,6 +28,7 @@
         "@ionic/storage": "2.1.3",
         "@types/socket.io-client": "^1.4.32",
         "cordova-android": "7.0.0",
+        "cordova-ios": "4.5.4",
         "cordova-plugin-device": "^2.0.2",
         "cordova-plugin-ionic-keyboard": "^2.1.2",
         "cordova-plugin-ionic-webview": "^1.2.1",
@@ -59,7 +60,8 @@
             "cordova-plugin-ionic-keyboard": {}
         },
         "platforms": [
-            "android"
+            "android",
+            "ios"
         ]
     }
 }

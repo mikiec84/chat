@@ -25,19 +25,18 @@ export class ChatPage {
         this.chatWithUsername = !this.isPublicChat ? navParams.data.username : 'all';
         this.roomId = !this.isPublicChat ? this.chatProvider.getRoomId(this.userProvider.getUser(), navParams.data) : null;
 
-
         if (this.isPublicChat) {
-            this.chatMessagesSubscription = this.chatProvider.publicChatMessages.subscribe(message => {
-                message ? this.messages.push(message) : null;
-            });
             this.chatProvider.sendMessage('joined this chat');
         } else {
             this.chatProvider.joinRoom(this.roomId);
-            this.chatMessagesSubscription = this.chatProvider.publicChatMessages.subscribe(message => {
-                message ? this.messages.push(message) : null;
-            });
             this.chatProvider.sendMessage('joined this chat', navParams.data.roomId);
         }
+
+        this.chatMessagesSubscription = this.chatProvider.publicChatMessages.subscribe(message => {
+            if (message) {
+                this.messages.push(message);
+            }
+        });
 
         this.messageForm = this.formBuilder.group({
             messageInput: ['']
@@ -67,6 +66,7 @@ export class ChatPage {
     }
 
     ionViewWillLeave() {
+        this.chatProvider.saveMessages(this.messages);
         this.roomId && this.chatProvider.leaveRoom(this.roomId);
         this.chatMessagesSubscription && this.chatMessagesSubscription.unsubscribe();
     }

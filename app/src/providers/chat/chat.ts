@@ -19,7 +19,6 @@ export class ChatProvider {
     ) {
         this.websocketProvider.onEvent('public-chat-updated')
         .subscribe((chatMessage) => {
-            this.saveMessage(chatMessage);
             this.publicChatMessages.next(chatMessage);
         });
     }
@@ -54,19 +53,19 @@ export class ChatProvider {
         }
     }
 
-    private saveMessage(message: string) {
+    public saveMessages(messages: Array<any>) {
         if (this.currentRoomId) {
-            this.saveMessageInRoom(message, this.currentRoomId);
+            this.saveMessageInRoom(messages, this.currentRoomId);
         } else {
-            this.messagesHistory.public.push(message);
+            this.messagesHistory.public = [...messages];
         }
     }
 
-    private saveMessageInRoom(message: string, roomId: string) {
+    private saveMessageInRoom(messages: Array<any>, roomId: string) {
         if (!this.messagesHistory.private[roomId]) {
             this.messagesHistory.private[roomId] = [];
         }
-        this.messagesHistory.private[roomId].push(message);
+        this.messagesHistory.private[roomId] = [...messages];
     }
 
     public getMessagesHistory(roomId?: string) {
