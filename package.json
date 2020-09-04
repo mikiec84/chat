@@ -28,7 +28,7 @@
   "devDependencies": {
     "mocha": "^2.2.4",
     "mocha-mongoose": "^1.2.0",
-    "mongodb": "^2.1.7",
+    "mongodb": "^3.6.1",
     "should": "^6.0.1"
   },
   "private": true
